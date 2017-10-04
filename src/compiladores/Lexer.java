@@ -4,6 +4,7 @@ import java.util.*;
 
 public class Lexer {
     public static final String EOF = "65535";
+    public static boolean last_token = false;
     public static int line = 1; //contador de linhas
     private char ch = ' '; //caractere lido do arquivo
     private FileReader file;
@@ -33,11 +34,20 @@ public class Lexer {
         reserve(new Word ("string", Tag.STRING));
         reserve(new Word ("true", Tag.TRUE));
         reserve(new Word ("false", Tag.FALSE));
+        reserve(new Word ("print", Tag.PRINT));
+        reserve(new Word ("scan", Tag.SCAN));
     }
     
     /*Lê o próximo caractere do arquivo*/
-    private void readch() throws IOException{  
-        ch = (char) file.read();
+    private void readch() throws IOException{
+        int valid_char = file.read();
+        if (valid_char == -1){
+            if(last_token){
+                throw new IOException();
+            }
+            last_token = true;
+        }  
+        ch = (char) valid_char;
     }
     
     /* Lê o próximo caractere do arquivo e verifica se é igual a c*/
@@ -86,7 +96,8 @@ public class Lexer {
                 readch();
                 return Word.mul;
             case '/':
-                if(readch('/')){
+                readch();
+                if(ch == '/'){
                     for(;;){
                         readch();
                         if(ch == '\n'){
@@ -94,7 +105,7 @@ public class Lexer {
                             break;
                         }
                     }
-                }else if(readch('*')){
+                }else if(ch == '*'){
                     for(;;){
                      readch();
                      if(ch == '*'){
