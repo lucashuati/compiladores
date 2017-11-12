@@ -13,21 +13,10 @@ public class Compiladores {
      */
     public static void main(String[] args) throws FileNotFoundException, IOException {
         Lexer lexer;
-        lexer = new Lexer("/home/lucas/Projects/Compiladores/ex2.comp");
-        Tag.set_map();
-        
-        for(;;){
-            try {
-                Token token = lexer.scan(); 
-                if (token.getClass() == Word.class) {
-                    System.out.println("Token: " + Tag.get_value(token.tag) + " Lexema: " + token.toString());
-                } else if (token.getClass() == Num.class) {
-                    System.out.println("Token: " + Tag.get_value(token.tag) + " Valor: " + token.toString());
-                }
-            } catch(IOException e) {
-               break;
-            }
-        }
+        Sintatic sintatic;
+        lexer = new Lexer("/home/lucas/Projects/CEFET/compiladores/src/compiladores/testes/ex1.comp");
+        sintatic = new Sintatic(lexer);
+        sintatic.program();
     }
     
 }
