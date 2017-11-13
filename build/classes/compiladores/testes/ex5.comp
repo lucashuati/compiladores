@@ -9,20 +9,20 @@ program
  print("C");
  scan(c);
  //Realizacao do teste
- if ( (a>b) && (a>c) ) then
- 	maior = a;
+ if ( (a>b) && (a>c) )
+ maior = a
+
  else
- 	if (b>c) then
-		maior = b;
- 	else
- 		maior = c;
- 	end
+ if (b>c) then
+ maior = b;
+
+ else
+ maior = c;
  end
-print("Maior valor:");
+ end
+ print("Maior valor:"");
  print (maior);
  print ("Outro? ");
  scan(outro);
- do
- 	print(a);
- while (outro >= 0) end
+ while (outro >= 0)
 end

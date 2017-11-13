@@ -1,10 +1,10 @@
+
 program
  int pontuacao, pontuacaoMaxima, disponibilidade;
  string pontuacaoMinima;
  disponibilidade = "Sim";
  pontuacaoMinima = 50;
  pontuacaoMaxima = 100;
-
 
  /* Entrada de dados
  Verifica aprovação de candidatos
@@ -19,7 +19,6 @@ program
  print("Candidato reprovado")
  end
  while (pontuação >= 0)end
- 
 end
 
 
