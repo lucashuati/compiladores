@@ -1,0 +1,19 @@
+program 
+
+int a, b, c;
+string oi;
+
+oi = "kole Lucao";
+a = b;
+c = oi + b;
+
+/* c = a + b */
+
+tb = oi;
+
+do
+/* 
+	while (a) 
+*/
+
+end

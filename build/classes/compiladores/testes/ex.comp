@@ -1,3 +1,10 @@
 program
- int a,as, b;
+	if x == b then
+		b = a;
+	else
+		if x == a then
+			print (x);
+		end
+		c = a;
+	end 
 end

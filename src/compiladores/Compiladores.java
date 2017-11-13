@@ -14,7 +14,7 @@ public class Compiladores {
     public static void main(String[] args) throws FileNotFoundException, IOException {
         Lexer lexer;
         Sintatic sintatic;
-        lexer = new Lexer("/home/lucas/Projects/CEFET/compiladores/src/compiladores/testes/ex.comp");
+        lexer = new Lexer("/home/lucas/Projects/CEFET/compiladores/src/compiladores/testes/ex6.comp");
         sintatic = new Sintatic(lexer);
         sintatic.program();
     }

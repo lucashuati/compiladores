@@ -36,6 +36,8 @@ public class Lexer {
         reserve(new Word ("false", Tag.FALSE));
         reserve(new Word ("print", Tag.PRINT));
         reserve(new Word ("scan", Tag.SCAN));
+        reserve(new Word ("while", Tag.WHILE));
+        reserve(new Word ("do", Tag.DO));
     }
     
     /*Lê o próximo caractere do arquivo*/
@@ -101,6 +103,7 @@ public class Lexer {
                     for(;;){
                         readch();
                         if(ch == '\n'){
+                            line++;
                             ch = ' ';
                             break;
                         }
@@ -110,6 +113,9 @@ public class Lexer {
                      readch();
                      if(ch == '*'){
                          readch();
+                         if(ch == '\n'){
+                             line++;
+                         }
                          if(ch == '/'){
                              ch = ' ';
                              break;
@@ -117,9 +123,10 @@ public class Lexer {
                      }
                     }
                     
+                }else {
+                    return Word.div;
                 }
-                readch();
-                return Word.div;
+                return new Token(Tag.COMMENT);
             case '+':
                 readch();
                 return Word.add;
@@ -166,7 +173,7 @@ public class Lexer {
             return w;
         }
         
-        // Comentarios
+        // Literal
         if(ch == '"'){
             StringBuffer sb = new StringBuffer();
             do{

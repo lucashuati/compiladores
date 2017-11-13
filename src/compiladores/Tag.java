@@ -95,7 +95,8 @@ public class Tag {
         SUB = 341,
         DIV = 342,
         MUL = 343,
-            
+        
+        COMMENT = 399,      
         ERRO = 400;
     
     
