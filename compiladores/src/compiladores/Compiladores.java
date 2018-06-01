@@ -17,6 +17,7 @@ public class Compiladores {
         lexer = new Lexer("/home/lucas/Projects/CEFET/compiladores/src/compiladores/testes/ex6.comp");
         sintatic = new Sintatic(lexer);
         sintatic.program();
+        System.out.println("Compilation sucessful");
     }
     
 }

@@ -1,0 +1,15 @@
+program
+ string a, b, y;
+ string result;
+ int x,total;
+ x = 1;
+ scan (b);
+ scan (a);
+ result = (a + b);
+ print ("Resultado: ");
+ print (result);
+ print ("Total: ");
+ total = y / x;
+ print ("Total: ");
+ print (total);
+end

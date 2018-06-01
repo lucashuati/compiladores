@@ -1,4 +1,6 @@
 program
+	int x, b;
+	int a, c;
 	if x == b then
 		b = a;
 	else

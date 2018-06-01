@@ -9,7 +9,14 @@ public class Lexer {
     private char ch = ' '; //caractere lido do arquivo
     private FileReader file;
     private Hashtable words = new Hashtable();
-
+    
+    public Hashtable getWords(){
+        return this.words;
+    }
+    
+    public void setWords(Hashtable words){
+        this.words = words;
+    }
     /* Método para inserir palavras reservadas na HashTable */
     private void reserve(Word w){
         words.put(w.getLexeme(), w); // lexema é a chave para entrada na
@@ -169,7 +176,6 @@ public class Lexer {
             if (w != null) 
                 return w; //palavra já existe na HashTable
             w = new Word (s, Tag.ID);
-            words.put(s, w);
             return w;
         }
         

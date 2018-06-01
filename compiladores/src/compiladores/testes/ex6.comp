@@ -1,19 +1,14 @@
 program 
 
 int a, b, c;
-string oi;
+string tb, oi;
 
 oi = "kole Lucao";
 a = b;
-c = oi + b;
 
 /* c = a + b */
 
 tb = oi;
 
-do
-/* 
-	while (a) 
-*/
-
 end
+

@@ -1,10 +1,13 @@
 package compiladores;
 
+import com.sun.corba.se.impl.orb.ParserTable;
 import java.io.IOException;
+import java.util.*;
 
 public class Sintatic {
     Token tok;
     Lexer lex;
+    Hashtable symbolTable = new Hashtable(); 
 	
     void advance() throws IOException {
         try {
@@ -17,23 +20,82 @@ public class Sintatic {
         }
         
     }
-        
-    void error() {
-        System.out.println("Unexpected Token on line " + lex.line);
+    
+    void updateSymbolTable(Token token){
+        String s = token.toString();
+        Hashtable words = lex.getWords();
+        Word w = (Word)words.get(s);
+        if (w == null){ 
+            semanticError("undeclared");
+        }else {
+            w.type = token.type;
+            words.put(s, w);
+        }
+    }
+    void addSymbolTable(Token token){
+        String s = token.toString();
+        Hashtable words = lex.getWords();
+        Word w = (Word)words.get(s);
+        if (w != null){ 
+            semanticError("oneness");
+        }else {
+            w = new Word (s, Tag.ID);
+            w.type = token.type;
+            words.put(s, w);
+        }
+    }
+
+    Token getToken(Token token){
+        String s = token.toString();
+        Hashtable words = lex.getWords();
+        Word w = (Word)words.get(s);
+        if (w == null){ 
+            semanticError("undeclared");
+            return new Token(-1);
+        }else {
+            return w;
+        }
+    }
+    
+    void sintaticError() {
+        System.out.println("Unexpected Token " + tok.toString() + " on line " + Lexer.line);
+        System.exit(0);
+    }
+    
+    void semanticError(String type) {
+        switch(type){
+            case "type":
+                System.out.println("Type error on line " + Lexer.line);
+                break;
+            case "oneness":
+                System.out.println(tok.toString() + " already declared on line " + Lexer.line);
+                break;
+            case "undeclared":
+                System.out.println(tok.toString() + " not declared yet on line " + Lexer.line);
+                break;
+        }
+        System.exit(0);
     }
 	
     void eat(int tag) throws IOException {
         if(tag == tok.tag) advance();
-        else error();
+        else sintaticError();
     }
 	
-    boolean identifier() throws IOException{ // true = more | false = not more
+    boolean identifier(String type, boolean declaration) throws IOException{ // true = more | false = not more
         switch(tok.tag){
           case Tag.ID:
+              if(declaration){
+                tok.type = type;
+                addSymbolTable(tok);
+              }else {
+                tok = getToken(tok);
+                updateSymbolTable(tok);
+              }
               eat(Tag.ID);
               break;  
           default:
-              error();
+              sintaticError();
       }
       if(tok.tag == Tag.COM){ // verify if has more id
           eat(Tag.COM);
@@ -43,8 +105,8 @@ public class Sintatic {
       }
   }
 
-    void identList() throws IOException {
-        while(identifier());     
+    void identList(String type) throws IOException {
+        while(identifier(type, true));     
     }
 	
     boolean decl() throws IOException {
@@ -53,13 +115,13 @@ public class Sintatic {
         switch(tok.tag) {
             case Tag.INT: 
                 eat(Tag.INT);
-                identList();
+                identList("Int");
                 eat(Tag.DOTCOM);
                 valid = true;
                 break;
             case Tag.STRING:
                 eat(Tag.STRING);
-                identList();
+                identList("String");
                 eat(Tag.DOTCOM);
                 valid = true;
                 break;
@@ -73,60 +135,59 @@ public class Sintatic {
     }
 
   
-    void factor() throws IOException {
+    Token factor() throws IOException {
+        Token aux = tok;
         switch(tok.tag) {
             case Tag.NUM:
+                tok.type = "Int";
                 eat(Tag.NUM);
-                break;
+                break;  
             case Tag.ID:
+                tok.type = getToken(tok).type;
                 eat(Tag.ID);
                 break;
             case Tag.LITERAL:
+                tok.type = "String";
                 eat(Tag.LITERAL);
                 break;
             case Tag.OPENPARENTESES:
                 eat(Tag.OPENPARENTESES);
-                expression();
+                aux = expression();
                 eat(Tag.CLOSEPARENTESES);
                 break;
             default:
-                error();
+                sintaticError();
         }
+        return aux;
   }
 
-    void factorA() throws IOException {
+    Token factorA() throws IOException {
         switch(tok.tag) {
             case Tag.NUM:
-                factor();
-                break;
             case Tag.ID:
-                factor();
-                break;
             case Tag.LITERAL:
-                factor();
-                break;
             case Tag.OPENPARENTESES:
-                factor();
-                break;
+                return factor();
             case Tag.NOT: 
                 eat(Tag.NOT);
-                factor();
-                break;
+                return factor();
             case Tag.SUB:
                 eat(Tag.SUB);
-                factor();
-                break;
+                return factor();
             default:
-                error();
+                sintaticError();
         }
+        return null;
     }
 
     void condition() throws IOException {		
         expression();
     }
   
-    void expression() throws IOException {
-      simpleExpr();
+    Token expression() throws IOException {
+      Token first = null;
+      Token seccond = null;
+      first = simpleExpr();
       switch(tok.tag) {
         case Tag.GE:
         case Tag.GT:
@@ -135,8 +196,16 @@ public class Sintatic {
         case Tag.EE:
         case Tag.NE:
             relOp();
-            simpleExpr();
+            seccond = simpleExpr();
       }
+      if(seccond != null){
+            if(!first.type.equals(seccond.type)){
+                semanticError("type");
+            }
+        }
+        Token aux = new Token(400);
+        aux.type = "Bool";
+        return aux;
     }
     
     void stmtSuffix() throws IOException {
@@ -154,7 +223,7 @@ public class Sintatic {
                 stmtList();
                 stmtSuffix();
                 break;
-            default: error();
+            default: sintaticError();
         }
     }
     
@@ -170,7 +239,7 @@ public class Sintatic {
                 eat(Tag.AND);
                 break;
             default: 
-                error();
+                sintaticError();
         }
     }
     
@@ -195,7 +264,7 @@ public class Sintatic {
                 eat(Tag.NE);
                 break;
             default:
-                error();
+                sintaticError();
         }
     }
     
@@ -211,40 +280,91 @@ public class Sintatic {
                 eat(Tag.OR);
                 break;
             default:
-                error();
+                sintaticError();
         }
     }
-    void term() throws IOException { // factor-a [ mulop factor-a ]
-        factorA();
+    Token term() throws IOException { // factor-a [ mulop factor-a ]
+        Token first = null;
+        Token seccond = null;
+        first = factorA();
         switch(tok.tag){
             case Tag.MUL:
             case Tag.DIV:
             case Tag.AND:
                 mulOp();
-                simpleExpr();
+                seccond = simpleExpr();
         }
+        if(seccond != null){
+            if(first.type != null &&  seccond.type != null){ // for ( and ) type verifications
+                if(!first.type.equals(seccond.type)){
+                    semanticError("type");
+                }else {
+                    if(first.type == "String"){
+                        semanticError("type");
+                    }
+                }
+            }
+        }
+        if(first != null && first.type != null){
+            return first; 
+        }else if(seccond != null && seccond.type != null){
+            return seccond;
+        }else {
+            semanticError("type");
+        }
+        return null;
     }
-    void simpleExpr() throws IOException { // term [ addop term ]
-        term();
+    Token simpleExpr() throws IOException { // term [ addop term ]
+        Token first = null;
+        Token seccond = null;
+        first = term();
+        boolean add = false;
         switch(tok.tag) {
             case Tag.ADD:
+                add = true;
             case Tag.SUB:
             case Tag.OR:
                 addOp();
-                simpleExpr();
-            
+                seccond = simpleExpr();
+               
         }
+    
+        if(seccond != null){
+           
+            if(first.type != null &&  seccond.type != null){ // for ( and ) type verifications
+                if(!first.type.equals(seccond.type)){
+                    semanticError("type");
+                }else {
+                    if(first.type == "String" && !add){
+                        semanticError("type");
+                    }
+                }
+            }
+        }
+        
+        if(first != null && first.type != null){
+            return first; 
+        }else if(seccond != null && seccond.type != null){
+            return seccond;
+        }else {
+            semanticError("type");
+        }
+        return null;
     }
 
     void assignStmt() throws IOException {
         switch(tok.tag){
             case Tag.ID:
-                identifier();
+                Token dest = tok;
+                identifier(tok.type, false);
                 eat(Tag.EQ);
-                simpleExpr();
+                Token expr = simpleExpr();
+                if(!dest.type.equals(expr.type)){
+                    semanticError("type");
+                }
                 break;
             default:
-                error();
+                sintaticError();
         }
     }
 
@@ -263,7 +383,7 @@ public class Sintatic {
             case Tag.SCAN:
                 eat(Tag.SCAN);
                 eat(Tag.OPENPARENTESES);
-                identifier();
+                identifier(tok.type, false);
                 eat(Tag.CLOSEPARENTESES);
                 break;
         }
@@ -274,7 +394,7 @@ public class Sintatic {
                 eat(Tag.PRINT);
                 eat(Tag.OPENPARENTESES);
                 writable();
-                eat(Tag.CLOSEPARENTESES);
+                eat(Tag.CLOSEPARENTESES);   
                 break;
         }
     }
@@ -288,7 +408,7 @@ public class Sintatic {
                 eat(Tag.END);
                 break;
             default:
-                error();
+                sintaticError();
         }
     }
     void ifStmt() throws IOException{
@@ -328,8 +448,7 @@ public class Sintatic {
                 whileStmt(); 
                 valid = true;
                 break;
-            default:
-                error();
+                
         } 
         return valid;
     }
@@ -345,11 +464,12 @@ public class Sintatic {
             case Tag.PRG: 
                 eat(Tag.PRG); 
                 declList(); // optional
-                stmtList(); 
+                stmtList();
                 eat(Tag.END); 
                 break;
-            default: error();		
+            default: sintaticError();		
         }
+        
     }
 	
     public Sintatic(Lexer lexer) throws IOException {
